@@ -1,87 +1,75 @@
 import {carts, products, promoCode, users} from "./dataset.mjs";
 import * as core from "./core-cart.mjs";
+import { serialize } from "v8";
+import { Console } from "console";
 
-
-console.log('Promo', promoCode);
-console.log('Products', products);
-console.log('Users', users);
-console.log('Cart', carts);
-
-console.log('Discount', core.discountedPrice(100, 0.2));
-
-for (let cartRow of carts) 
+for (let user of users)
 {
+    var sommaTot = core.prezzo(user);
+    var scontopt1 = core.tipoSconto(user);
+    var scontoTot = core.prezzoScontato(sommaTot, core.tipoSconto(user));
 
-    
-for (let cartRow of carts) 
-{ 
-    let prodottiUtente = cartRow.products;
-    let UUIDCorrente = cartRow.user;
-    let totaleOrdine = 0;
-   
-
-    let ean = '';
-    let nomeProdotto = '';
-    let prezzoProdotto ='';
-    let rigaRicevuta = '';
-
-    console.log('Utente corrente', UUIDCorrente, '\n');
-    console.log('Prodotti utente corrente',prodottiUtente, '\n');
-
-    let user = core.getUser(UUIDCorrente);
-    
-    let nomeUtente = user.firstName + ' ' + user.lastName;
-    let disponibilitaUtente = user.wallet;
-    let promoUtente = user.promo;
-
-    let rate = core.getPercentageFromPromoCode(promoUtente);
-   
-    console.log(`${nomeUtente} ha ${rate} di sconto`);
-    
-
-
-    if(prodottiUtente.lenght < 1)
+    if(sommaTot >= 0)
     {
-        console.log(`${nomeUtente} NON HA PRODOTTI NEL CARRELLO.`)
+        if(core.portafoglioPieno(user.wallet, core.prezzoScontato(sommaTot,core.tipoSconto(user.promo))) == true)
+        {
+            for (let cart of carts)
+            {
+                if(user.uuid == cart.user && cart.products != '')
+                {
+                    console.log(core.del1());
+                    console.log("  Processing " +
+                         core.formattazioneProdotto(user.firstName) + " " +
+                         core.formattazioneProdotto(user.lastName) + " cart:");
+                    console.log("   " + "MAR APR 18 2022");
+                    console.log(core.del2());
+
+                    if (user.uuid == cartRow.user)
+                    {
+                        cartRow.products.forEach(product => console.log("  ["
+                        + core.getProduct(product).ean + "]   "
+                        + core.formattazioneProdotto(core.getProduct(product).name) 
+                        + "  \t"+core.getProduct(product).price.toFixed(2) + "€"));
+                    }    
+                }
+                console.log(core.del2());
+                console.log("  Totale: \t" + sommaTot.toFixed(2));
+                
+                if(sommaTot > 0 && user.promo != '' || user.promo != null){
+
+                    console.log(core.del1());
+                       console.log("  Sconto Applicato:\t" + core.sconto(sommaTot,core.tipoSconto(user.promo)));
+                       console.log("  Totale scontato:\t" + core.prezzoScontato(sommaTot,core.tipoSconto(user.promo)));
+                       console.log("\n");
+                       if(user.promo == undefined || user.promo === '')
+                       {
+                        console.log("");
+                       }
+                       else
+                       {
+                       console.log("  CODICE PROMO:\t\t" + user.promo);
+                       }
+
+                       console.log(core.del1() + "");
+                }
+
+                var tott = core.portafoglioUTD(user.wallet, core.prezzoScontato(sommaTot, core.tipoSconto(user.promo)));
+
+                console.log(core.del3());
+
+                console.log(   "  " + core.formattazioneProdotto(user.firstName) 
+                + " " + core.formattazioneProdotto(user.lastName) 
+                + core.assicuredWallet(totcred));
+                console.log(core.del3());
+
+                console.log("\n\n\n\n");
+                
+
+            }
+
+
+        }
+
+
     }
-
-
-    if(disponibilitaUtente > 0)
-    {
-        console.log('Utente si chiama',nomeUtente, '\n');
-        console.log('Utente ha disponibilità',disponibilitaUtente, 'Euro \n');
-
-    }else{
-        console.log(`${nomeUtente} ha il portafoglio VUOTO `)
-    }
-
-    for(let item of prodottiUtente)
-    {
-        let prodCorrente = core.getProduct(item);
-        let ean = prodCorrente.ean;
-        let nomeProdotto = prodCorrente.name;
-        let prezzoProdotto = prodCorrente.price;
-        let rigaRicevuta = ` \t [${ean}] \t ${nomeProdotto} \t ${prezzoProdotto}`
-
-        console.log(rigaRicevuta,'\n')
-        totaleOrdine += prezzoProdotto;
-    }
-
-    if(promoUtente === '' && promoUtente !== undefined && promoUtente === null) 
-    {
-        console.log(`\t CODICE PROMO: \t\t ${promoUtente}  `);
-        let discountedPrice = core.discountedPrice(totaleOrdine, rate)
-        console.log('discountPriceValue ',discountedPriceValue);
-    }
-
-    if(disponibilitaUtente < totaleOrdine)
-    {
-        console.log(` ${nomeUtente} NON HA ABBASTANZA SOLDI PER COMPRARE.`);
-    }
-    
-}
-
-
-
-
 }
