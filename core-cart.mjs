@@ -1,104 +1,82 @@
+//aiuto di Sara Morritti
+
 import {carts, products, promoCode, users} from "./dataset.mjs";
+
 import * as fs from "fs";
+import * as os from "os"; //per il nome della macchina
 
-function getUser(uuid) 
-{
-    return users.find(user => user.uuid === uuid);
+//parte intestazione
+const primaParte = () => {const {nomemacchina} = os.userInfo();
+                    return `${nomemacchina} - Cart ${process.pid}`;
 }
 
-function getProduct(ean) 
-{
-    return products.find(product => product.ean === ean);
+const secondaParte = () => {
+    let data = new Date();
+    return data.toDateString();
 }
 
-function formattazioneProdotto(product) 
+//getter utenti
+const getUser = (uuid) => users.find(user => user.uuid === uuid);
+//getter prodotti
+const getProduct = (productId) => products.find(product => product.ean === productId);
+
+//sconto preso dal suo codice
+const getPercentageFromPromoCode = function(promoCodeName){
+    if(promoCodeName!=''&& promoCodeName!=undefined&&promoCodeName!=null){
+        let rate = promoCode.find(item=> promoCodeName===item.name);
+        return rate.percentage
+    }
+}
+const discountedPrice = (price, rate) => (price * (1 - rate)).toFixed(2);
+
+//parte formattazione prodotti
+function formattazioneProdotto(products)
 {
-    return product.toLowerCase().charAt(0).toUpperCase() + product.toLowerCase().slice(1);
+    let stampaMin = products.toLowerCase();
+    let primaLettera = stampaMin.charAt(0);
+    let stampaMax = primaLettera.toUpperCase();
+
+    let restoStringa = stampaMin.slice(1);
+
+    return `${stampaMax}${restoStringa}`;
 }
 
-var s = 0;
-function prezzo (user)
-{
-    for (let products of carts)
+const formattazioneFinale = (item) => {
+
+    let nomeFinale = '';
+    let nomeProdotto = item.name;
+    let nomiSplit = nomeProdotto.split(' ');
+
+    for(let piece of nomiSplit)
     {
-        if (user.uuid == products.user)
+        if(piece != nomiSplit[0])
         {
-            product.products.forEach(prod => somma += getProduct(prod).price);
+            nomeFinale += ' ';
         }
+        nomeFinale += formattazioneProdotto(piece);
     }
 
-    return somma;
+    return nomeFinale;
 }
 
-function portafoglioPieno (portafoglio, somma) 
-{
-    let a;
-    if(portafoglio - somma >= 0)
-    {
-        a = true;
+//separatori -
+const row = (del) => {
+    let riga = '';
+    for (let piece = 1; piece < 55; piece++) {
+        riga += '-';
     }
-    else
-    {
-        a = false
-    }
-    return a;
+    return del + riga + del;
 }
-
-function portafoglioUTD (portafoglioOS, tot)
-{
-    return portafoglioOS - tot;
-}
-
-function soldiRimanenti(tot) {
-    return "I soldi rimanenti sono " +tot >= 0 ? + tot.toFixed(2) + "€" : false;
-}
-
-function tipoSconto (codiceSconto)
-{
-    if(codiceSconto != '' && codiceSconto != null)
-    {
-        for (let codice of promoCode)
-        {
-            if (codice.name === promo)
-            {
-                return codice.percentage
-            }
-             
-        }
-    }
-    else
-    {
-        return 0;
-    }
-
-
-}
-
-//arrow function convertite automaticamente da VS code
-const prezzoScontato = (price, rate ) => ((price * (1 - rate))).toFixed(2);
-const sconto = (prezzo, sconto) => (prezzo*(sconto*100))/100;
-
-
-//trattini automatici
-//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
-const del1 = (openClose, symbol, times) => '+ ' + '-'.repeat(50) + ' +';
-const del2 = (openClose, symbol, times) => '* ' + '-'.repeat(50) + ' *';
-const del3 = (openClose, symbol, times) => '** ' + '-'.repeat(50) + ' **';
-
-const stampaScontrino = (content, filename) => fs.writeFileSync(filename, content);
 
 export
 {
+    primaParte,
+    secondaParte,
     getUser,
     getProduct,
+    getPercentageFromPromoCode,
+    discountedPrice,
     formattazioneProdotto,
-    prezzo,
-    portafoglioPieno,
-    portafoglioUTD,
-    soldiRimanenti,
-    tipoSconto,
-    prezzoScontato,
-    sconto,
-    del1, del2, del3,
-    stampaScontrino,
-};
+    formattazioneFinale,
+    row,
+}
